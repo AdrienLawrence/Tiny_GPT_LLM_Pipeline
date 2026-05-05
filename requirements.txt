@@ -1,0 +1,6 @@
+torch
+tokenizers
+tqdm
+numpy
+matplotlib
+streamlit
