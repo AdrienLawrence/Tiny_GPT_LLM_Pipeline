@@ -7,6 +7,8 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from dataset import TextDataset
+from config import BLOCK_SIZE as block_size
+from config import CHECKPOINT_PATH, MODEL_SETTINGS, TEXT_PATH, TOKENIZER_PATH
 from model import GPT
 from tokenizers import Tokenizer
 
@@ -14,13 +16,10 @@ from tokenizers import Tokenizer
 # ----------------------------
 # Paths
 # ----------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-tokenizer_path = os.path.join(BASE_DIR, "tokenizer", "tokenizer.json")
-text_path = os.path.join(BASE_DIR, "data", "input.txt")
-
-checkpoint_dir = os.path.join(BASE_DIR, "checkpoints")
-checkpoint_path = os.path.join(checkpoint_dir, "model.pt")
+tokenizer_path = TOKENIZER_PATH
+text_path = TEXT_PATH
+checkpoint_dir = CHECKPOINT_PATH.parent
+checkpoint_path = CHECKPOINT_PATH
 loss_log_path = os.path.join(checkpoint_dir, "loss_log.csv")
 
 os.makedirs(checkpoint_dir, exist_ok=True)
@@ -30,10 +29,6 @@ os.makedirs(checkpoint_dir, exist_ok=True)
 # Hyperparameters
 # ----------------------------
 batch_size = 16
-block_size = 128
-embed_size = 128
-num_layers = 2
-heads = 4
 learning_rate = 1e-4
 epochs = 2
 
@@ -72,13 +67,7 @@ loader = DataLoader(
 # ----------------------------
 # Model
 # ----------------------------
-model = GPT(
-    vocab_size=vocab_size,
-    embed_size=embed_size,
-    num_layers=num_layers,
-    heads=heads,
-    max_length=block_size
-).to(device)
+model = GPT(vocab_size=vocab_size, **MODEL_SETTINGS).to(device)
 
 
 # ----------------------------

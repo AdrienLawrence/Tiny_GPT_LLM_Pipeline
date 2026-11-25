@@ -1,34 +1,17 @@
-import os
 import math
 import time
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
-from tokenizers import Tokenizer
 
 from dataset import TextDataset
-from model import GPT
+from config import BLOCK_SIZE as block_size
+from config import TEXT_PATH as text_path
+from config import TOKENIZER_PATH as tokenizer_path
+from inference import load_checkpoint
 
 
-# ----------------------------
-# Paths
-# ----------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-tokenizer_path = os.path.join(BASE_DIR, "tokenizer", "tokenizer.json")
-text_path = os.path.join(BASE_DIR, "data", "input.txt")
-checkpoint_path = os.path.join(BASE_DIR, "checkpoints", "model.pt")
-
-
-# ----------------------------
-# Config
-# MUST match training
-# ----------------------------
 batch_size = 16
-block_size = 128
-embed_size = 128
-num_layers = 2
-heads = 4
 
 eval_batches = 200
 max_new_tokens = 100
@@ -39,7 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # ----------------------------
 # Load tokenizer
 # ----------------------------
-tokenizer = Tokenizer.from_file(tokenizer_path)
+tokenizer, model = load_checkpoint(device)
 vocab_size = tokenizer.get_vocab_size()
 
 
@@ -64,19 +47,6 @@ val_loader = DataLoader(
 )
 
 
-# ----------------------------
-# Model
-# ----------------------------
-model = GPT(
-    vocab_size=vocab_size,
-    embed_size=embed_size,
-    num_layers=num_layers,
-    heads=heads,
-    max_length=block_size
-).to(device)
-
-model.load_state_dict(torch.load(checkpoint_path, map_location=device))
-model.eval()
 
 criterion = nn.CrossEntropyLoss()
 

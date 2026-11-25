@@ -1,42 +1,16 @@
-import os
+import streamlit as st
 import torch
 import torch.nn.functional as F
-import streamlit as st
-from tokenizers import Tokenizer
 
-from model import GPT
-
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-tokenizer_path = os.path.join(BASE_DIR, "tokenizer", "tokenizer.json")
-checkpoint_path = os.path.join(BASE_DIR, "checkpoints", "model.pt")
-
-block_size = 128
-embed_size = 128
-num_layers = 2
-heads = 4
+from config import BLOCK_SIZE as block_size
+from inference import load_checkpoint
 
 device = torch.device("cpu")
 
 
 @st.cache_resource
 def load_model():
-    tokenizer = Tokenizer.from_file(tokenizer_path)
-    vocab_size = tokenizer.get_vocab_size()
-
-    model = GPT(
-        vocab_size=vocab_size,
-        embed_size=embed_size,
-        num_layers=num_layers,
-        heads=heads,
-        max_length=block_size
-    ).to(device)
-
-    model.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    model.eval()
-
-    return tokenizer, model
+    return load_checkpoint(device)
 
 
 def generate_text(model, tokenizer, prompt, max_new_tokens=80, temperature=0.5, top_k=15):
